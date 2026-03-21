@@ -1,14 +1,24 @@
-# Wind Speed Analysis for Renewable Energy
+# Recipe Tracker
 
-## Project Overview
+## Overview
+A Flask-based web application that allows users to perform CRUD operations on a recipe database.
 
+## Features
+- Add recipes
+- View recipes
+- Update recipes
+- Delete recipes
 
+## Technologies
+- Flask
+- SQLite
+- HTML/CSS/JavaScript
 
-This repository contains:
+## How to Run
+1. Install requirements
+2. Run app.py
+3. Open browser at localhost
 
-* A Jupyter Notebook with data analysis and visualisations
-* Weather data files sourced from Met Éireann
-* Documentation detailing the project's methodology and results
 
 ## Libraries Used
 
