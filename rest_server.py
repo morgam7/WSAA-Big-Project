@@ -1,4 +1,30 @@
+#code got from chatGPT - creating fucntion to connect flask commands to db
+
+import sqlite3
+
+def get_db_connection():
+    conn = sqlite3.connect("database/lichens.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
 from flask import Flask, request, render_template
+# code from chatgpt - setting up database - creating a table
+# this will not be permanent - will delete this later
+
+def init_db():
+    conn = sqlite3.connect("database/lichens.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS lichens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        description TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 
 
 app = Flask(__name__)
@@ -11,16 +37,29 @@ def home():
 def getall():
     return "get all"
 
-@app.route('/lichens/<int:id>', methods=['GET'])
-def findbyid(id):
-    return "find by id"
+@app.route("/lichens", methods=["GET"])
+def get_lichens():
+    conn = get_db_connection()
+    lichens = conn.execute("SELECT * FROM lichens").fetchall()
+    conn.close()
+
+    return str([dict(row) for row in lichens])
 
 #Create
 @app.route('/lichens', methods=['POST'])
 def create():
-    #read in json from the body
-    return "create"
-    f"create {jsonstring}"
+    name = request.form["name"]
+    description = request.form["description"]
+
+    conn = get_db_connection()
+    conn.execute(
+        "INSERT INTO lichens (name, description) VALUES (?, ?)",
+        (name, description)
+    )
+    conn.commit()
+    conn.close()
+
+    return "Lichen added"
 
 # Update    
 @app.route('/lichens/<int:id>', methods=['PUT'])
@@ -35,6 +74,9 @@ def delete():
     return f"delete {id} {jsonstring}"
 
 if __name__ == "__main__":
+    
+    init_db()
+    
     app.run(debug=True)
 
 
