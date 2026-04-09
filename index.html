@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lichen Tracker</title>
+</head>
+<body>
+   
+    <h1>Lichen Tracker</h1>
+
+    <h2>Add a New Lichen</h2>
+
+<form id="lichenForm">
+    <label>Lichen Name:</label><br>
+    <input type="text" id="name"><br><br>
+
+    <label>Description:</label><br>
+    <textarea id="description"></textarea><br><br>
+
+    <button type="submit">Add Lichen</button>
+</form>    
+
+
+</body>
+</html>
+
+<script>
+document.getElementById("lichenForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // stop normal form submission
+
+    const name = document.getElementById("name").value;
+    const description = document.getElementById("description").value;
+
+    fetch("http://127.0.0.1:5000/lichens", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: name,
+            description: description
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Lichen added:", data);
+    });
+});
+</script>

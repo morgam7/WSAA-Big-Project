@@ -7,7 +7,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify
 # code from chatgpt - setting up database - creating a table
 # this will not be permanent - will delete this later
 
@@ -29,9 +29,10 @@ def init_db():
 
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+#@app.route("/")
+#def home():
+ #   return render_template("index.html")
+
 
 @app.route('/lichens', methods=['GET'])
 def getall():
@@ -44,7 +45,7 @@ def get_lichens():
     conn.close()
 
     return str([dict(row) for row in lichens])
-
+'''
 #Create
 @app.route('/lichens', methods=['POST'])
 def create():
@@ -60,6 +61,27 @@ def create():
     conn.close()
 
     return "Lichen added"
+'''
+@app.route("/lichens", methods=["POST"])
+def create_lichen():
+    data = request.get_json()
+
+    name = data["name"]
+    description = data["description"]
+
+    conn = get_db_connection()
+    cursor = conn.execute(
+        "INSERT INTO lichens (name, description) VALUES (?, ?)",
+        (name, description)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "id": cursor.lastrowid,
+        "name": name,
+        "description": description
+    }), 201
 
 # Update    
 @app.route('/lichens/<int:id>', methods=['PUT'])
