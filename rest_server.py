@@ -1,13 +1,18 @@
 #code got from chatGPT - creating fucntion to connect flask commands to db
 
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import sqlite3
+
+app = Flask(__name__)
+CORS(app)
 
 def get_db_connection():
     conn = sqlite3.connect("database/lichens.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-from flask import Flask, request, jsonify
+#from flask import Flask, request, jsonify
 # code from chatgpt - setting up database - creating a table
 # this will not be permanent - will delete this later
 
@@ -27,24 +32,27 @@ def init_db():
     conn.close()
 
 
-app = Flask(__name__)
+#app = Flask(__name__)
 
 #@app.route("/")
 #def home():
  #   return render_template("index.html")
 
 
+
+
+
+'''
 @app.route('/lichens', methods=['GET'])
 def getall():
     return "get all"
-
+'''
 @app.route("/lichens", methods=["GET"])
 def get_lichens():
     conn = get_db_connection()
     lichens = conn.execute("SELECT * FROM lichens").fetchall()
     conn.close()
-
-    return str([dict(row) for row in lichens])
+    return jsonify([dict(row) for row in lichens])
 '''
 #Create
 @app.route('/lichens', methods=['POST'])

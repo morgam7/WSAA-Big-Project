@@ -2,7 +2,59 @@
 <html>
 <head>
     <title>Lichen Tracker</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        background-color: #2e7d32;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    button:hover {
+        background-color: #1b5e20;
+    }
+
+    .lichen-item {
+        padding: 10px;
+        margin-top: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    </style>
+
 </head>
+
 <body>
    
     <h1>Lichen Tracker</h1>
@@ -10,7 +62,7 @@
     <h2>Add a New Lichen</h2>
 
 <form id="lichenForm">
-    <label>Lichen Name:</label><br>
+    <label for="name">Lichen Name:</label><br>
     <input type="text" id="name"><br><br>
 
     <label>Description:</label><br>
@@ -19,11 +71,32 @@
     <button type="submit">Add Lichen</button>
 </form>    
 
+<h2>Saved Lichens</h2>
+<div id="lichenList"></div>
 
-</body>
-</html>
+
 
 <script>
+
+function loadLichens() {
+        fetch("http://127.0.0.1:5000/lichens")
+            .then(response => response.json())
+            .then(data => {
+                const lichenList = document.getElementById("lichenList");
+                lichenList.innerHTML = "";
+
+                data.forEach(lichen => {
+                    const item = document.createElement("div");
+                    item.className = "lichen-item";
+                    item.innerHTML = `<strong>${lichen.name}</strong>: ${lichen.description}`;
+                    lichenList.appendChild(item);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading lichens:", error);
+            });
+}
+
 document.getElementById("lichenForm").addEventListener("submit", function(e) {
     e.preventDefault(); // stop normal form submission
 
@@ -40,9 +113,18 @@ document.getElementById("lichenForm").addEventListener("submit", function(e) {
             description: description
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Lichen added:", data);
+    .then(response => response.json())
+        .then(data => {
+            loadLichens();
+            document.getElementById("lichenForm").reset();
+        })
+        .catch(error => {
+            console.error("Error adding lichen:", error);
+        });
     });
-});
+
+    loadLichens();
 </script>
+
+</body>
+</html>
