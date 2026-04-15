@@ -1,0 +1,113 @@
+
+
+At minimum, 
+a Flask REST API, one database table, and a web interface using AJAX to do CRUD.
+
+Project can be:
+
+Lichen sightings tracker
+
+A user can:
+
+create a lichen sighting
+read/view all sightings
+update a sighting
+delete a sighting
+
+Each sighting could have:
+
+lichen name
+description
+location name
+latitude
+longitude
+maybe image path later
+
+That already satisfies the minimum project.
+
+So  simplest acceptable version, project is:
+
+One table: lichens
+
+id
+name
+description
+location_name
+latitude
+longitude
+
+Flask API
+
+GET /lichens
+POST /lichens
+PUT /lichens/<id>
+DELETE /lichens/<id>
+
+Frontend
+
+HTML/CSS/JS page
+uses AJAX/fetch calls to Flask
+lets user add, view, edit, delete lichen records
+
+That is enough for the minimum.
+
+Then the extra marks:
+
+“Make it look nice”
+
+CSS
+Already started this
+
+“Host online”
+
+After the core CRUD works
+
+“More than one database table”
+
+add users
+or species
+
+“Link to an outside data source”
+
+Pull map, or species info
+
+“Perform more than CRUD”
+
+search by county
+filter unidentified lichens
+sort by date
+show nearby sightings
+all good extras later
+
+So the best strategy is:
+
+Version 1 for the assignment
+
+one lichens table
+CRUD working
+AJAX frontend
+nice styling
+
+Version 2 for more marks
+
+host it online
+image upload or image URL
+maybe a second table like species
+unidentified/identified status
+
+Version 3 for building it after the course
+
+map of sightings
+expert confirmation
+mobile-friendly uploads
+
+
+To start:
+
+one table
+clean CRUD
+AJAX frontend
+decent styling
+
+Then add one impressive extra only after that is solid.
+
