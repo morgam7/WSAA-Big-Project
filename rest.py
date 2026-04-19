@@ -5,6 +5,9 @@ import dao
 
 app = Flask(__name__)
 
+@app.route("/")
+def home():
+    return app.send_static_file("index.html")
 
 @app.route("/lichens", methods=["GET"])
 def get_lichens():
@@ -14,8 +17,8 @@ def get_lichens():
 
 @app.route("/lichens/<int:id>", methods=["GET"])
 def get_lichen(id):
-    lichen = dao.get_lichen_by_id(id)
-    if lichen is None:
+    lichens = dao.get_lichen_by_id(id)
+    if lichens is None:
         return jsonify({"error": "Lichen not found"}), 404
     return jsonify(dict(lichen))
 
