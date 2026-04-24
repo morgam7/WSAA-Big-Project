@@ -38,7 +38,7 @@ def create_lichen(name, description):
 
 
 def update_lichen(id, name, description):
-    conn = get_db_connection()
+    conn = sqlite3.connect("database/lichens.db")
     conn.execute(
         "UPDATE lichens SET name = ?, description = ? WHERE id = ?",
         (name, description, id)

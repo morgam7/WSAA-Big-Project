@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Lichen</title>
+</head>
+<body>
+
+    <h1>Update Lichen</h1>
+
+    <label>ID:</label>
+    <input type="text" id="lichenId" readonly><br><br>
+
+    <label>Name:</label>
+    <input type="text" id="name"><br><br>
+
+    <label>Description:</label>
+    <textarea id="description"></textarea><br><br>
+
+    <button onclick="updateLichen()">Update Lichen</button>
+    <button onclick="window.location.href='/view'">Back to View</button>
+
+    <p id="result"></p>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        document.getElementById("lichenId").value = id;
+
+        function updateLichen() {
+            const id = document.getElementById("lichenId").value;
+            const name = document.getElementById("name").value;
+            const description = document.getElementById("description").value;
+
+            fetch(`/lichens/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = "Lichen updated successfully";
+            })
+            .catch(error => {
+                document.getElementById("result").innerText = "Error updating lichen";
+                console.error("Error:", error);
+            });
+        }
+    </script>
+
+</body>
+</html>

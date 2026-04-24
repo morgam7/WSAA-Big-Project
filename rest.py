@@ -14,11 +14,12 @@ def home():
 def view_page():
     return send_from_directory("static", "view.html")
 
-'''
+
 @app.route("/update")
 def update_page():
     return send_from_directory("static", "update.html")
 
+'''
 @app.route("/delete")
 def delete_page():
     return send_from_directory("static", "delete.html")
