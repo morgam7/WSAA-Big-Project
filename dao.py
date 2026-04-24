@@ -6,11 +6,16 @@ def get_db_connection():
     return conn
 
 
+
 def get_all_lichens():
-    conn = get_db_connection()
-    lichens = conn.execute("SELECT * FROM lichens").fetchall()
+    conn = sqlite3.connect("database/lichens.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM lichens")
+    rows = cursor.fetchall()
+
     conn.close()
-    return lichens
+    return rows
 
 
 def get_lichen_by_id(id):

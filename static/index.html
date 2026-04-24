@@ -70,22 +70,8 @@
 
     <button type="submit">Add Lichen</button>
 </form>    
-
-<h2>Saved Lichens</h2>
-<div id="lichenList"></div>
-
-<h2>Update Lichen</h2>
-
-<label for="lichenId">Lichen ID:</label>
-<input type="number" id="lichenId"><br><br>
-
-<label for="name">Name:</label>
-<input type="text" id="name"><br><br>
-
-<label for="description">Description:</label>
-<input type="text" id="description"><br><br>
-
-<button onclick="updateLichen()">Update</button>
+<br><br>
+<button onclick="window.location.href='/view'">View Lichens</button>
 
 <p id="result"></p>
 
@@ -143,31 +129,7 @@ document.getElementById("lichenForm").addEventListener("submit", function(e) {
 
 
 
-function updateLichen() {
-    const id = document.getElementById("lichenId").value;
-    const name = document.getElementById("name").value;
-    const description = document.getElementById("description").value;
 
-    fetch(`/lichens/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: name,
-            description: description
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById("result").innerText =
-            "Updated: " + JSON.stringify(data);
-    })
-    .catch(error => {
-        document.getElementById("result").innerText =
-            "Error: " + error;
-    });
-}
 
 </script>
 

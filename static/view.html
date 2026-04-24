@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Lichens</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #eeeeee;
+        }
+
+        button {
+            margin: 4px;
+            padding: 6px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>All Lichen Entries</h1>
+
+    <button onclick="loadLichens()">Load Lichens</button>
+    <button onclick="window.location.href='/'">Back to Home</button>
+
+    <div id="results"></div>
+
+    <script>
+        function loadLichens() {
+            fetch("/lichens")
+                .then(response => response.json())
+                .then(data => {
+                    let output = `
+                        <table>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                    `;
+
+                    data.forEach(row => {
+                        output += `
+                            <tr>
+                                <td>${row[0]}</td>
+                                <td>${row[1]}</td>
+                                <td>${row[2]}</td>
+                                <td>
+                                    <button onclick="goToUpdate(${row[0]})">Update</button>
+                                    <button onclick="deleteLichen(${row[0]})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    output += `</table>`;
+
+                    document.getElementById("results").innerHTML = output;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("results").innerHTML = "Error loading lichens";
+                });
+        }
+
+        function goToUpdate(id) {
+            window.location.href = `/update?id=${id}`;
+        }
+
+        function deleteLichen(id) {
+            fetch(`/lichens/${id}`, {
+                method: "DELETE"
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Lichen deleted");
+                loadLichens();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error deleting lichen");
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,18 +1,38 @@
 #code got from chatGPT - creating fucntion to connect flask commands to db
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import dao
 
 app = Flask(__name__)
 
+# Page routes
 @app.route("/")
 def home():
-    return app.send_static_file("index.html")
+    return send_from_directory("static", "index.html")
+
+@app.route("/view")
+def view_page():
+    return send_from_directory("static", "view.html")
+
+'''
+@app.route("/update")
+def update_page():
+    return send_from_directory("static", "update.html")
+
+@app.route("/delete")
+def delete_page():
+    return send_from_directory("static", "delete.html")
+
+'''
+
+
 
 @app.route("/lichens", methods=["GET"])
 def get_lichens():
     lichens = dao.get_all_lichens()
-    return jsonify([dict(row) for row in lichens])
+    return jsonify(lichens)
+
+
 
 
 @app.route("/lichens/<int:id>", methods=["GET"])
