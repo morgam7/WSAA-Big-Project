@@ -4,75 +4,182 @@
     <title>View Lichens</title>
 
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #2e7d32;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        .secondary-button:hover {
+            background-color: #333;
+        }
+
+        .delete-button {
+            background-color: #b3261e;
+        }
+
+        .delete-button:hover {
+            background-color: #7f1d1d;
+        }
+
         table {
             border-collapse: collapse;
-            width: 90%;
-            margin-top: 20px;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 14px;
         }
 
         th, td {
-            border: 1px solid black;
-            padding: 8px;
+            border: 1px solid #ddd;
+            padding: 10px;
             text-align: left;
             vertical-align: top;
         }
 
         th {
-            background-color: #eeeeee;
+            background-color: #e8f5e9;
+            color: #1b5e20;
         }
 
-        button {
-            margin: 4px;
-            padding: 6px 10px;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .coords {
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        .actions {
+            white-space: nowrap;
+        }
+
+        .actions button {
+            width: auto;
+            margin: 2px;
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+
+        #results {
+            overflow-x: auto;
+        }
+
+        #result {
+            text-align: center;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-top: 10px;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>All Lichen Entries</h1>
+    <div class="button-row">
+        
+        <button class="secondary-button" onclick="window.location.href='/'">Back to Home</button>
+    </div>
 
-    <button onclick="loadLichens()">Load Lichens</button>
-    <button onclick="window.location.href='/'">Back to Home</button>
+    <p id="result"></p>
 
     <div id="results"></div>
 
     <script>
         function loadLichens() {
-            fetch("/lichens")
+            fetch("http://127.0.0.1:5000/lichens")
                 .then(response => response.json())
                 .then(data => {
-                    let output = `
+                    const results = document.getElementById("results");
+
+                    if (data.length === 0) {
+                        results.innerHTML = "<p>No lichens found.</p>";
+                        return;
+                    }
+
+                    let table = `
                         <table>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Coordinates</th>
+                                    <th>Comment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                     `;
 
-                    data.forEach(row => {
-                        output += `
+                    data.forEach(lichen => {
+                        table += `
                             <tr>
-                                <td>${row[0]}</td>
-                                <td>${row[1]}</td>
-                                <td>${row[2]}</td>
-                                <td>
-                                    <button onclick="goToUpdate(${row[0]})">Update</button>
-                                    <button onclick="deleteLichen(${row[0]})">Delete</button>
+                                <td>${lichen.id}</td>
+                                <td><strong>${lichen.name}</strong></td>
+                                <td>${lichen.location}</td>
+                                <td class="coords">
+                                    Lat: ${lichen.latitude}<br>
+                                    Long: ${lichen.longitude}
+                                </td>
+                                <td>${lichen.comment}</td>
+                                <td class="actions">
+                                    <button onclick="goToUpdate(${lichen.id})">Update</button>
+                                    <button class="delete-button" onclick="deleteLichen(${lichen.id})">Delete</button>
                                 </td>
                             </tr>
                         `;
                     });
 
-                    output += `</table>`;
+                    table += `
+                            </tbody>
+                        </table>
+                    `;
 
-                    document.getElementById("results").innerHTML = output;
+                    results.innerHTML = table;
                 })
                 .catch(error => {
-                    console.error("Error:", error);
-                    document.getElementById("results").innerHTML = "Error loading lichens";
+                    console.error("Error loading lichens:", error);
+                    document.getElementById("results").innerHTML = "Error loading lichens.";
                 });
         }
 
@@ -86,14 +193,26 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert("Lichen deleted");
+                const result = document.getElementById("result");
+
+                if (result) {
+                    result.innerText = "Lichen deleted successfully.";
+                }
+
                 loadLichens();
             })
             .catch(error => {
                 console.error("Error:", error);
-                alert("Error deleting lichen");
+
+                const result = document.getElementById("result");
+
+                if (result) {
+                    result.innerText = "Error deleting lichen.";
+                }
             });
         }
+
+        loadLichens();
     </script>
 
 </body>

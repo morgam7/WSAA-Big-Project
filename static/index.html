@@ -2,136 +2,180 @@
 <html>
 <head>
     <title>Lichen Tracker</title>
+
     <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f6f8;
-        margin: 0;
-        padding: 20px;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
 
-    .container {
-        max-width: 600px;
-        margin: auto;
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
+        .container {
+            max-width: 550px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-    h1 {
-        text-align: center;
-    }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #2e7d32;
+        }
 
-    input, textarea {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
+        h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
 
-    button {
-        background-color: #2e7d32;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%;
-    }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+        }
 
-    button:hover {
-        background-color: #1b5e20;
-    }
+        input, textarea {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-    .lichen-item {
-        padding: 10px;
-        margin-top: 10px;
-        border-bottom: 1px solid #eee;
-    }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .coord-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .coord-field {
+            flex: 1;
+        }
+
+        button {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        .secondary-button:hover {
+            background-color: #333;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 15px;
+        }
     </style>
-
 </head>
 
 <body>
-   
-    <h1>Lichen Tracker</h1>
 
-    <h2>Add a New Lichen</h2>
+    <div class="container">
 
-<form id="lichenForm">
-    <label for="name">Lichen Name:</label><br>
-    <input type="text" id="name"><br><br>
+        <h1>Lichen Tracker</h1>
 
-    <label>Description:</label><br>
-    <textarea id="description"></textarea><br><br>
+        <h2>Add a New Lichen</h2>
 
-    <button type="submit">Add Lichen</button>
-</form>    
-<br><br>
-<button onclick="window.location.href='/view'">View Lichens</button>
+        <form id="lichenForm">
+            <label for="name">Lichen Name:</label>
+            <input type="text" id="name">
 
-<p id="result"></p>
+            <label for="location">Location:</label>
+            <input type="text" id="location">
 
+            <div class="coord-row">
+                <div class="coord-field">
+                    <label for="latitude">Latitude:</label>
+                    <input type="text" id="latitude">
+                </div>
 
-<script>
+                <div class="coord-field">
+                    <label for="longitude">Longitude:</label>
+                    <input type="text" id="longitude">
+                </div>
+            </div>
 
+            <label for="comment">Comment:</label>
+            <textarea id="comment"></textarea>
 
+            <button type="submit">Add Lichen</button>
+        </form>
 
-function loadLichens() {
-        fetch("http://127.0.0.1:5000/lichens")
+        <button class="secondary-button" onclick="window.location.href='/view'">
+            View Lichens
+        </button>
+
+        <p id="result"></p>
+
+    </div>
+
+    <script>
+        function loadLichens() {
+            fetch("http://127.0.0.1:5000/lichens")
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error("Error loading lichens:", error);
+                });
+        }
+
+        document.getElementById("lichenForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const location = document.getElementById("location").value;
+            const latitude = document.getElementById("latitude").value;
+            const longitude = document.getElementById("longitude").value;
+            const comment = document.getElementById("comment").value;
+
+            fetch("http://127.0.0.1:5000/lichens", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    location: location,
+                    latitude: latitude,
+                    longitude: longitude,
+                    comment: comment
+                })
+            })
             .then(response => response.json())
             .then(data => {
-                const lichenList = document.getElementById("lichenList");
-                lichenList.innerHTML = "";
-
-                data.forEach(lichen => {
-                    const item = document.createElement("div");
-                    item.className = "lichen-item";
-                    item.innerHTML = `<strong>${lichen.name}</strong>: ${lichen.description}`;
-                    lichenList.appendChild(item);
-                });
+                window.location.href = "/view";
             })
             .catch(error => {
-                console.error("Error loading lichens:", error);
+                console.error("Error adding lichen:", error);
+                document.getElementById("result").innerText = "Error adding lichen.";
             });
-}
-
-document.getElementById("lichenForm").addEventListener("submit", function(e) {
-    e.preventDefault(); // stop normal form submission
-
-    const name = document.getElementById("name").value;
-    const description = document.getElementById("description").value;
-
-    fetch("http://127.0.0.1:5000/lichens", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: name,
-            description: description
-        })
-    })
-    .then(response => response.json())
-        .then(data => {
-            loadLichens();
-            document.getElementById("lichenForm").reset();
-        })
-        .catch(error => {
-            console.error("Error adding lichen:", error);
         });
-    });
-
-    loadLichens();
-
-
-
-
-
-</script>
+    </script>
 
 </body>
 </html>

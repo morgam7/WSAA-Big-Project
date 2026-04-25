@@ -2,24 +2,126 @@
 <html>
 <head>
     <title>Update Lichen</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #2e7d32;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .coord-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .coord-field {
+            flex: 1;
+        }
+
+        button {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        .secondary-button:hover {
+            background-color: #333;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
 </head>
+
 <body>
 
-    <h1>Update Lichen</h1>
+    <div class="container">
 
-    <label>ID:</label>
-    <input type="text" id="lichenId" readonly><br><br>
+        <h1>Update Lichen</h1>
 
-    <label>Name:</label>
-    <input type="text" id="name"><br><br>
+        <label for="lichenId">ID:</label>
+        <input type="text" id="lichenId" readonly>
 
-    <label>Description:</label>
-    <textarea id="description"></textarea><br><br>
+        <label for="name">Lichen Name:</label>
+        <input type="text" id="name">
 
-    <button onclick="updateLichen()">Update Lichen</button>
-    <button onclick="window.location.href='/view'">Back to View</button>
+        <label for="location">Location:</label>
+        <input type="text" id="location">
 
-    <p id="result"></p>
+        <div class="coord-row">
+            <div class="coord-field">
+                <label for="latitude">Latitude:</label>
+                <input type="text" id="latitude">
+            </div>
+
+            <div class="coord-field">
+                <label for="longitude">Longitude:</label>
+                <input type="text" id="longitude">
+            </div>
+        </div>
+
+        <label for="comment">Comment:</label>
+        <textarea id="comment"></textarea>
+
+        <button onclick="updateLichen()">Update Lichen</button>
+        <button class="secondary-button" onclick="window.location.href='/view'">Back to View</button>
+
+        <p id="result"></p>
+
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -27,10 +129,36 @@
 
         document.getElementById("lichenId").value = id;
 
+        function loadLichenForUpdate() {
+            fetch(`/lichens`)
+                .then(response => response.json())
+                .then(data => {
+                    const lichen = data.find(item => item.id == id);
+
+                    if (!lichen) {
+                        document.getElementById("result").innerText = "Lichen not found.";
+                        return;
+                    }
+
+                    document.getElementById("name").value = lichen.name;
+                    document.getElementById("location").value = lichen.location;
+                    document.getElementById("latitude").value = lichen.latitude;
+                    document.getElementById("longitude").value = lichen.longitude;
+                    document.getElementById("comment").value = lichen.comment;
+                })
+                .catch(error => {
+                    document.getElementById("result").innerText = "Error loading lichen.";
+                    console.error("Error:", error);
+                });
+        }
+
         function updateLichen() {
             const id = document.getElementById("lichenId").value;
             const name = document.getElementById("name").value;
-            const description = document.getElementById("description").value;
+            const location = document.getElementById("location").value;
+            const latitude = document.getElementById("latitude").value;
+            const longitude = document.getElementById("longitude").value;
+            const comment = document.getElementById("comment").value;
 
             fetch(`/lichens/${id}`, {
                 method: "PUT",
@@ -39,18 +167,23 @@
                 },
                 body: JSON.stringify({
                     name: name,
-                    description: description
+                    location: location,
+                    latitude: latitude,
+                    longitude: longitude,
+                    comment: comment
                 })
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("result").innerText = "Lichen updated successfully";
+            window.location.href = "/view";
             })
             .catch(error => {
-                document.getElementById("result").innerText = "Error updating lichen";
+                document.getElementById("result").innerText = "Error updating lichen.";
                 console.error("Error:", error);
             });
         }
+
+        loadLichenForUpdate();
     </script>
 
 </body>

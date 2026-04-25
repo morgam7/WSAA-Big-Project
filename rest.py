@@ -47,30 +47,47 @@ def get_lichen(id):
 @app.route("/lichens", methods=["POST"])
 def create_lichen():
     data = request.get_json()
-    name = data["name"]
-    description = data["description"]
 
-    new_id = dao.create_lichen(name, description)
+    name = data["name"]
+    comment = data["comment"]
+    location = data["location"]
+    latitude = data["latitude"]
+    longitude = data["longitude"]
+
+    new_id = dao.create_lichen(name, comment, location, latitude, longitude)
 
     return jsonify({
         "id": new_id,
         "name": name,
-        "description": description
+        "comment": comment,
+        "location": location,
+        "latitude": latitude,
+        "longitude": longitude
     }), 201
+
+
+
 
 
 @app.route("/lichens/<int:id>", methods=["PUT"])
 def update_lichen(id):
     data = request.get_json()
-    name = data["name"]
-    description = data["description"]
 
-    dao.update_lichen(id, name, description)
+    name = data["name"]
+    comment = data["comment"]
+    location = data["location"]
+    latitude = data["latitude"]
+    longitude = data["longitude"]
+
+    dao.update_lichen(id, name, comment, location, latitude, longitude)
 
     return jsonify({
         "id": id,
         "name": name,
-        "description": description
+        "comment": comment,
+        "location": location,
+        "latitude": latitude,
+        "longitude": longitude
     })
 
 
