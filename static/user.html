@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Lichens</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #2e7d32;
+        }
+
+        .button-row {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .coords {
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        #results {
+            overflow-x: auto;
+        }
+
+        #message {
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Lichens posted by <span id="username">User</span></h1>
+
+        <div class="button-row">
+            <button onclick="window.location.href='/view'">Back to View</button>
+        </div>
+
+        <p id="message"></p>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const userID = params.get("id");
+
+        function loadUserLichens() {
+            fetch("/lichens")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("URL userID:", userID);
+                    console.log("All lichens:", data);
+
+                    const userLichens = data.filter(lichen => lichen.userID == userID);
+
+                    const results = document.getElementById("results");
+                    const message = document.getElementById("message");
+
+                    if (userLichens.length === 0) {
+                        document.getElementById("username").innerText = "Unknown User";
+                        results.innerHTML = "";
+                        message.innerText = "No lichens found for this user.";
+                        return;
+                    }
+
+                    document.getElementById("username").innerText = userLichens[0].username;
+                    message.innerText = "";
+
+                    let table = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Lichen Name</th>
+                                    <th>Location</th>
+                                    <th>Coordinates</th>
+                                    <th>Comment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    userLichens.forEach(lichen => {
+                        table += `
+                            <tr>
+                                <td>${lichen.id}</td>
+                                <td>
+                                    <a href="/lichen?id=${lichen.id}">
+                                        <strong>${lichen.name}</strong>
+                                    </a>
+                                </td>
+                                <td>${lichen.location}</td>
+                                <td class="coords">
+                                    Lat: ${lichen.latitude}<br>
+                                    Long: ${lichen.longitude}
+                                </td>
+                                <td>${lichen.comment}</td>
+                            </tr>
+                        `;
+                    });
+
+                    table += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    results.innerHTML = table;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("message").innerText = "Error loading user lichens.";
+                });
+        }
+
+        loadUserLichens();
+    </script>
+
+</body>
+</html>

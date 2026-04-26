@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lichen Details</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .detail-box {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 10px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: Arial, sans-serif;
+        }
+
+        button {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        #result {
+            text-align: center;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 id="lichenName">Lichen Details</h1>
+
+        <div class="detail-box">
+            <p><strong>Location:</strong> <span id="location"></span></p>
+            <p><strong>Latitude:</strong> <span id="latitude"></span></p>
+            <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+            <p><strong>Current Comment:</strong> <span id="comment"></span></p>
+        </div>
+
+        <label for="newComment">Leave / update comment:</label>
+        <textarea id="newComment"></textarea>
+
+        <button onclick="saveComment()">Save Comment</button>
+        <button class="secondary-button" onclick="window.location.href='/view'">Back to View</button>
+
+        <p id="result"></p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        let currentLichen = null;
+
+        function loadLichen() {
+            fetch("/lichens")
+                .then(response => response.json())
+                .then(data => {
+                    currentLichen = data.find(item => item.id == id);
+
+                    if (!currentLichen) {
+                        document.getElementById("result").innerText = "Lichen not found.";
+                        return;
+                    }
+
+                    document.getElementById("lichenName").innerText = currentLichen.name;
+                    document.getElementById("location").innerText = currentLichen.location;
+                    document.getElementById("latitude").innerText = currentLichen.latitude;
+                    document.getElementById("longitude").innerText = currentLichen.longitude;
+                    document.getElementById("comment").innerText = currentLichen.comment;
+                    document.getElementById("newComment").value = currentLichen.comment;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("result").innerText = "Error loading lichen.";
+                });
+        }
+
+        function saveComment() {
+            const updatedComment = document.getElementById("newComment").value;
+
+            fetch(`/lichens/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: currentLichen.name,
+                    location: currentLichen.location,
+                    latitude: currentLichen.latitude,
+                    longitude: currentLichen.longitude,
+                    comment: updatedComment
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = "Comment saved.";
+                document.getElementById("comment").innerText = updatedComment;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("result").innerText = "Error saving comment.";
+            });
+        }
+
+        loadLichen();
+    </script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>View Lichens</title>
+    <title>Lichens by Name</title>
 
     <style>
         body {
@@ -27,13 +27,11 @@
         }
 
         .button-row {
-            display: flex;
-            gap: 10px;
             margin-bottom: 20px;
         }
 
         button {
-            background-color: #2e7d32;
+            background-color: #555;
             color: white;
             padding: 10px 14px;
             border: none;
@@ -42,23 +40,7 @@
         }
 
         button:hover {
-            background-color: #1b5e20;
-        }
-
-        .secondary-button {
-            background-color: #555;
-        }
-
-        .secondary-button:hover {
             background-color: #333;
-        }
-
-        .delete-button {
-            background-color: #b3261e;
-        }
-
-        .delete-button:hover {
-            background-color: #7f1d1d;
         }
 
         table {
@@ -94,64 +76,73 @@
         }
 
         .actions button {
+            background-color: #2e7d32;
             width: auto;
             margin: 2px;
             padding: 7px 10px;
             font-size: 13px;
         }
 
+        .actions button:hover {
+            background-color: #1b5e20;
+        }
+
         #results {
             overflow-x: auto;
         }
 
-        #result {
+        #message {
             text-align: center;
-            color: #2e7d32;
             font-weight: bold;
-            margin-top: 10px;
+            color: #555;
+            margin-top: 15px;
         }
-        a {
-    color: #2e7d32;
-    text-decoration: none;
-    font-weight: bold;
-    }
-
-    a:hover {
-        color: #1b5e20;
-        text-decoration: underline;
-    }
     </style>
 </head>
 
 <body>
 
-    <div class="button-row">
-        
-        <button class="secondary-button" onclick="window.location.href='/'">Back to Home</button>
+    <div class="container">
+        <h1>Posts for <span id="lichenName">Lichen</span></h1>
+
+        <div class="button-row">
+            <button onclick="window.location.href='/view'">Back to View</button>
+        </div>
+
+        <p id="message"></p>
+
+        <div id="results"></div>
     </div>
 
-    <p id="result"></p>
-
-    <div id="results"></div>
-
     <script>
-        function loadLichens() {
-            fetch("http://127.0.0.1:5000/lichens")
+        const params = new URLSearchParams(window.location.search);
+        const lichenName = params.get("name");
+
+        function loadLichensByName() {
+            fetch("/lichens")
                 .then(response => response.json())
                 .then(data => {
                     const results = document.getElementById("results");
+                    const message = document.getElementById("message");
 
-                    if (data.length === 0) {
-                        results.innerHTML = "<p>No lichens found.</p>";
+                    document.getElementById("lichenName").innerText = lichenName;
+
+                    const matchingLichens = data.filter(lichen => lichen.name === lichenName);
+
+                    if (matchingLichens.length === 0) {
+                        results.innerHTML = "";
+                        message.innerText = "No posts found for this lichen name.";
                         return;
                     }
+
+                    message.innerText = "";
 
                     let table = `
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Name</th>
+                                    <th>Lichen Name</th>
                                     <th>Location</th>
                                     <th>Coordinates</th>
                                     <th>Comment</th>
@@ -162,7 +153,7 @@
                             <tbody>
                     `;
 
-                    data.forEach(lichen => {
+                    matchingLichens.forEach(lichen => {
                         table += `
                             <tr>
                                 <td>
@@ -172,9 +163,7 @@
                                 </td>
 
                                 <td>
-                                    <a href="/lichen-name?name=${encodeURIComponent(lichen.name)}">
-                                        <strong>${lichen.name}</strong>
-                                    </a>
+                                    <strong>${lichen.name}</strong>
                                 </td>
 
                                 <td>
@@ -200,7 +189,6 @@
 
                                 <td class="actions">
                                     <button onclick="goToUpdate(${lichen.id})">Update</button>
-                                    <button class="delete-button" onclick="deleteLichen(${lichen.id})">Delete</button>
                                 </td>
                             </tr>
                         `;
@@ -214,8 +202,8 @@
                     results.innerHTML = table;
                 })
                 .catch(error => {
-                    console.error("Error loading lichens:", error);
-                    document.getElementById("results").innerHTML = "Error loading lichens.";
+                    console.error("Error:", error);
+                    document.getElementById("message").innerText = "Error loading lichen posts.";
                 });
         }
 
@@ -223,32 +211,7 @@
             window.location.href = `/update?id=${id}`;
         }
 
-        function deleteLichen(id) {
-            fetch(`/lichens/${id}`, {
-                method: "DELETE"
-            })
-            .then(response => response.json())
-            .then(data => {
-                const result = document.getElementById("result");
-
-                if (result) {
-                    result.innerText = "Lichen deleted successfully.";
-                }
-
-                loadLichens();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-
-                const result = document.getElementById("result");
-
-                if (result) {
-                    result.innerText = "Error deleting lichen.";
-                }
-            });
-        }
-
-        loadLichens();
+        loadLichensByName();
     </script>
 
 </body>

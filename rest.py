@@ -10,6 +10,10 @@ app = Flask(__name__)
 def home():
     return send_from_directory("static", "index.html")
 
+@app.route("/user")
+def user_page():
+    return send_from_directory("static", "user.html")
+
 @app.route("/view")
 def view_page():
     return send_from_directory("static", "view.html")
@@ -18,6 +22,18 @@ def view_page():
 @app.route("/update")
 def update_page():
     return send_from_directory("static", "update.html")
+
+@app.route("/lichen")
+def lichen_detail_page():
+    return send_from_directory("static", "lichen.html")
+
+@app.route("/lichen-name")
+def lichen_name_page():
+    return send_from_directory("static", "lichen_name.html")
+
+@app.route("/location")
+def location_page():
+    return send_from_directory("static", "location.html")
 
 '''
 @app.route("/delete")
@@ -48,13 +64,16 @@ def get_lichen(id):
 def create_lichen():
     data = request.get_json()
 
+    username = data["username"]
     name = data["name"]
     comment = data["comment"]
     location = data["location"]
     latitude = data["latitude"]
     longitude = data["longitude"]
 
-    new_id = dao.create_lichen(name, comment, location, latitude, longitude)
+    user_id = dao.get_or_create_user(username)
+
+    new_id = dao.create_lichen(name, comment, location, latitude, longitude, user_id)
 
     return jsonify({
         "id": new_id,
@@ -62,7 +81,9 @@ def create_lichen():
         "comment": comment,
         "location": location,
         "latitude": latitude,
-        "longitude": longitude
+        "longitude": longitude,
+        "userID": user_id,
+        "username": username
     }), 201
 
 
