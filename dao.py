@@ -6,10 +6,39 @@ def get_db_connection():
     return conn
 
 
-def get_or_create_user(username):
-    conn = sqlite3.connect("database/lichens.db")
+
+# -------------------------
+# User functions
+# -------------------------
+
+def get_all_users():
+    conn = get_connection()
     cursor = conn.cursor()
 
+    cursor.execute("""
+        SELECT userID, username
+        FROM users
+        ORDER BY username
+    """)
+
+    rows = cursor.fetchall()
+
+    users = []
+    for row in rows:
+        users.append({
+            "userID": row["userID"],
+            "username": row["username"]
+        })
+
+    conn.close()
+    return users
+
+
+def get_or_create_user(username):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Check if user already exists
     cursor.execute("""
         SELECT userID
         FROM users
@@ -19,58 +48,92 @@ def get_or_create_user(username):
     user = cursor.fetchone()
 
     if user is not None:
+        user_id = user["userID"]
         conn.close()
-        return user[0]
+        return user_id
 
+    # If user does not exist, create new user
     cursor.execute("""
         INSERT INTO users (username)
         VALUES (?)
     """, (username,))
 
     conn.commit()
-    new_user_id = cursor.lastrowid
+
+    user_id = cursor.lastrowid
+
     conn.close()
+    return user_id
 
-    return new_user_id
-
-
-
+# -------------------------
+# Lichen functions
+# -------------------------
 
 def get_all_lichens():
-    conn = sqlite3.connect("database/lichens.db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT l.id, l.name, l.comment, l.location, l.latitude, l.longitude,
-               u.userID, u.username
-        FROM lichens l
-        LEFT JOIN users u
-            ON l.userID = u.userID
+        SELECT 
+            lichens.id,
+            lichens.name,
+            lichens.comment,
+            lichens.location,
+            lichens.latitude,
+            lichens.longitude,
+            lichens.userID,
+            users.username
+        FROM lichens
+        LEFT JOIN users ON lichens.userID = users.userID
+        ORDER BY lichens.id DESC
     """)
 
     rows = cursor.fetchall()
-    conn.close()
 
     lichens = []
-
     for row in rows:
         lichens.append({
-            "id": row[0],
-            "name": row[1],
-            "comment": row[2],
-            "location": row[3],
-            "latitude": row[4],
-            "longitude": row[5],
-            "userID": row[6],
-            "username": row[7]
+            "id": row["id"],
+            "name": row["name"],
+            "comment": row["comment"],
+            "location": row["location"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
+            "userID": row["userID"],
+            "username": row["username"]
         })
 
+    conn.close()
     return lichens
 
 
+
+
+
+
+
+
 def get_lichen_by_id(id):
-    conn = get_db_connection()
-    lichen = conn.execute("SELECT * FROM lichens WHERE id = ?", (id,)).fetchone()
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            lichens.id,
+            lichens.name,
+            lichens.comment,
+            lichens.location,
+            lichens.latitude,
+            lichens.longitude,
+            lichens.userID,
+            users.username
+        FROM lichens
+        LEFT JOIN users ON lichens.userID = users.userID
+        WHERE lichens.id = ?
+    """, (id,))
+
+    lichen = cursor.fetchone()
+
     conn.close()
     return lichen
 
@@ -106,7 +169,14 @@ def update_lichen(id, name, comment, location, latitude, longitude):
 
 
 def delete_lichen(id):
-    conn = get_db_connection()
-    conn.execute("DELETE FROM lichens WHERE id = ?", (id,))
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM lichens
+        WHERE id = ?
+    """, (id,))
+
     conn.commit()
     conn.close()
+

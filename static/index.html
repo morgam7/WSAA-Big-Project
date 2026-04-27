@@ -105,15 +105,35 @@
 
         <h2>Add a New Lichen</h2>
 
+        <h1>Login</h1>
+
+            <form onsubmit="loginUser(event)">
+
+                <label for="user_select">Choose your username:</label>
+                <select id="user_select" name="username" onchange="toggleNewUserBox()">
+                    <option value="">-- Select a user --</option>
+                    <option value="new">+ Add new user</option>
+                </select>
+
+                <br><br>
+
+                <div id="new_user_box" style="display: none;">
+                    <label for="new_username">New username:</label>
+                    <input type="text" id="new_username" name="new_username">
+                </div>
+
+                <br>
+
+                <button type="submit">Continue</button>
+
+            </form>
+
+            <p id="message"></p>
+
+
 
         <form id="lichenForm">
 
-            <label for="username">Username:</label>
-            <input type="text" id="username">
-
-            <p class="help-text">
-                Enter your username. If it does not exist yet, it will be created automatically.
-            </p>
 
             <label for="name">Lichen Name:</label>
             <input type="text" id="name">
@@ -148,6 +168,75 @@
     </div>
 
     <script>
+
+        
+        function toggleNewUserBox() {
+            const select = document.getElementById("user_select");
+            const newUserBox = document.getElementById("new_user_box");
+
+            if (select.value === "new") {
+                newUserBox.style.display = "block";
+            } else {
+                newUserBox.style.display = "none";
+            }
+        }
+
+        function loadUsers() {
+            fetch("/users")
+                .then(response => response.json())
+                .then(users => {
+                    const select = document.getElementById("user_select");
+                    const addNewOption = select.querySelector('option[value="new"]');
+
+                    users.forEach(user => {
+                        const option = document.createElement("option");
+                        option.value = user.username;
+                        option.textContent = user.username;
+                        select.insertBefore(option, addNewOption);
+                    });
+                });
+        }
+
+        function loginUser(event) {
+            event.preventDefault();
+
+            const selectedUser = document.getElementById("user_select").value;
+            const newUsername = document.getElementById("new_username").value;
+
+            let username;
+
+            if (selectedUser === "new") {
+                username = newUsername;
+            } else {
+                username = selectedUser;
+            }
+
+            if (!username) {
+                document.getElementById("message").innerText = "Please choose or enter a username.";
+                return;
+            }
+
+            fetch("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem("username", data.username);
+                localStorage.setItem("userID", data.userID);
+                window.location.href = "/user";
+            });
+        }
+
+        loadUsers();
+
+
+
         function loadLichens() {
             fetch("http://127.0.0.1:5000/lichens")
                 .then(response => response.json())
