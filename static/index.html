@@ -5,201 +5,203 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 550px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0;
         }
 
         h1 {
+            background-color: #4f6f52;
+            color: white;
             text-align: center;
-            margin-top: 0;
-            color: #2e7d32;
+            padding: 25px;
+            margin: 0 0 30px 0;
         }
 
         h2 {
-            margin-top: 0;
-            font-size: 20px;
+            color: #3f5f43;
+            text-align: center;
+        }
+
+        #login_section,
+        #lichen_form_section {
+            background-color: white;
+            width: 80%;
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
             font-weight: bold;
-            font-size: 14px;
+            color: #2f3d2f;
         }
 
-        input, textarea {
-            width: 100%;
-            padding: 9px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
+        input,
+        select,
         textarea {
-            min-height: 80px;
-            resize: vertical;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #b8c7b8;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            background-color: #fbfdfb;
         }
 
-        .coord-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .coord-field {
-            flex: 1;
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4f6f52;
+            box-shadow: 0 0 4px rgba(79, 111, 82, 0.4);
         }
 
         button {
-            background-color: #2e7d32;
+            background-color: #4f6f52;
             color: white;
-            padding: 10px;
             border: none;
-            border-radius: 5px;
+            padding: 10px 18px;
+            margin-top: 18px;
+            margin-right: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
+            font-size: 15px;
         }
 
         button:hover {
-            background-color: #1b5e20;
+            background-color: #3f5f43;
         }
 
-        .secondary-button {
-            background-color: #555;
-        }
-
-        .secondary-button:hover {
-            background-color: #333;
-        }
-
-        #result {
-            text-align: center;
+        #login_message,
+        #message,
+        #current_user {
             margin-top: 15px;
-        }
-        .help-text {
-            font-size: 13px;
-            color: #666;
-            margin-top: -10px;
-            margin-bottom: 15px;
+            font-weight: bold;
+            color: #4f6f52;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
+    <h1>Lichen Tracker</h1>
 
-        <h1>Lichen Tracker</h1>
+    <!-- USER LOGIN SECTION -->
+    <div id="login_section">
 
-        <h2>Add a New Lichen</h2>
+        <h2>Choose User</h2>
 
-        <h1>Login</h1>
+        <label for="user_select">Select your username:</label>
 
-            <form onsubmit="loginUser(event)">
+        <select id="user_select" onchange="toggleNewUserBox()">
+            <option value="">-- Select a user --</option>
+            <option value="new">+ Add new user</option>
+        </select>
 
-                <label for="user_select">Choose your username:</label>
-                <select id="user_select" name="username" onchange="toggleNewUserBox()">
-                    <option value="">-- Select a user --</option>
-                    <option value="new">+ Add new user</option>
-                </select>
+        <br><br>
 
-                <br><br>
+        <div id="new_user_box" style="display: none;">
+            <label for="new_username">New username:</label>
+            <input type="text" id="new_username">
+        </div>
 
-                <div id="new_user_box" style="display: none;">
-                    <label for="new_username">New username:</label>
-                    <input type="text" id="new_username" name="new_username">
-                </div>
+        <br>
 
-                <br>
+        <button onclick="loginUser()">Continue</button>
 
-                <button type="submit">Continue</button>
-
-            </form>
-
-            <p id="message"></p>
-
-
-
-        <form id="lichenForm">
-
-
-            <label for="name">Lichen Name:</label>
-            <input type="text" id="name">
-
-            <label for="location">Location:</label>
-            <input type="text" id="location">
-
-            <div class="coord-row">
-                <div class="coord-field">
-                    <label for="latitude">Latitude:</label>
-                    <input type="text" id="latitude">
-                </div>
-
-                <div class="coord-field">
-                    <label for="longitude">Longitude:</label>
-                    <input type="text" id="longitude">
-                </div>
-            </div>
-
-            <label for="comment">Comment:</label>
-            <textarea id="comment"></textarea>
-
-            <button type="submit">Add Lichen</button>
-        </form>
-
-        <button class="secondary-button" onclick="window.location.href='/view'">
-            View Lichens
-        </button>
-
-        <p id="result"></p>
+        <p id="login_message"></p>
 
     </div>
 
+
+    <!-- LICHEN FORM SECTION - HIDDEN UNTIL USER LOGS IN -->
+    <div id="lichen_form_section" style="display: none;">
+
+        <h2>Add Lichen Entry</h2>
+
+        <p id="current_user"></p>
+
+        <label for="name">Lichen Name:</label>
+        <input type="text" id="name">
+
+        <br><br>
+
+        <label for="comment">Comment:</label>
+        <input type="text" id="comment">
+
+        <br><br>
+
+        <label for="location">Location:</label>
+        <input type="text" id="location">
+
+        <br><br>
+
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude">
+
+        <br><br>
+
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude">
+
+        <br><br>
+
+        <button onclick="createLichen()">Submit Lichen</button>
+        <button onclick="window.location.href='/view'">View All Lichens</button>
+
+        <p id="message"></p>
+
+    </div>
+
+
     <script>
 
-        
         function toggleNewUserBox() {
-            const select = document.getElementById("user_select");
+            const selectedValue = document.getElementById("user_select").value;
             const newUserBox = document.getElementById("new_user_box");
 
-            if (select.value === "new") {
+            if (selectedValue === "new") {
                 newUserBox.style.display = "block";
             } else {
                 newUserBox.style.display = "none";
             }
         }
 
+
         function loadUsers() {
             fetch("/users")
                 .then(response => response.json())
                 .then(users => {
+                    console.log("Users loaded:", users);
+
                     const select = document.getElementById("user_select");
                     const addNewOption = select.querySelector('option[value="new"]');
 
                     users.forEach(user => {
                         const option = document.createElement("option");
+
                         option.value = user.username;
                         option.textContent = user.username;
+
                         select.insertBefore(option, addNewOption);
                     });
+                })
+                .catch(error => {
+                    console.error("Error loading users:", error);
+                    document.getElementById("login_message").innerText = "Error loading users.";
                 });
         }
 
-        function loginUser(event) {
-            event.preventDefault();
 
+        function loginUser() {
             const selectedUser = document.getElementById("user_select").value;
             const newUsername = document.getElementById("new_username").value;
 
@@ -212,7 +214,7 @@
             }
 
             if (!username) {
-                document.getElementById("message").innerText = "Please choose or enter a username.";
+                document.getElementById("login_message").innerText = "Please choose or enter a username.";
                 return;
             }
 
@@ -229,58 +231,57 @@
             .then(data => {
                 localStorage.setItem("username", data.username);
                 localStorage.setItem("userID", data.userID);
-                window.location.href = "/user";
+
+                document.getElementById("current_user").innerText = "Current user: " + data.username;
+
+                document.getElementById("login_section").style.display = "none";
+                document.getElementById("lichen_form_section").style.display = "block";
+            })
+            .catch(error => {
+                console.error("Login error:", error);
+                document.getElementById("login_message").innerText = "Login error.";
             });
         }
 
-        loadUsers();
 
+        function createLichen() {
+            const username = localStorage.getItem("username");
 
+            const lichen = {
+                username: username,
+                name: document.getElementById("name").value,
+                comment: document.getElementById("comment").value,
+                location: document.getElementById("location").value,
+                latitude: document.getElementById("latitude").value,
+                longitude: document.getElementById("longitude").value
+            };
 
-        function loadLichens() {
-            fetch("http://127.0.0.1:5000/lichens")
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.error("Error loading lichens:", error);
-                });
-        }
-
-        document.getElementById("lichenForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById("name").value;
-            const location = document.getElementById("location").value;
-            const latitude = document.getElementById("latitude").value;
-            const longitude = document.getElementById("longitude").value;
-            const comment = document.getElementById("comment").value;
-            const username = document.getElementById("username").value;
-
-            fetch("http://127.0.0.1:5000/lichens", {
+            fetch("/lichens", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    username: username,
-                    name: name,
-                    location: location,
-                    latitude: latitude,
-                    longitude: longitude,
-                    comment: comment
-                })
+                body: JSON.stringify(lichen)
             })
             .then(response => response.json())
             .then(data => {
-                window.location.href = "/view";
+                document.getElementById("message").innerText = "Lichen entry added successfully.";
+
+                document.getElementById("name").value = "";
+                document.getElementById("comment").value = "";
+                document.getElementById("location").value = "";
+                document.getElementById("latitude").value = "";
+                document.getElementById("longitude").value = "";
             })
             .catch(error => {
-                console.error("Error adding lichen:", error);
-                document.getElementById("result").innerText = "Error adding lichen.";
+                console.error("Error:", error);
+                document.getElementById("message").innerText = "Error adding lichen entry.";
             });
-        });
+        }
+
+
+        loadUsers();
+
     </script>
 
 </body>

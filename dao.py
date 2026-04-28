@@ -12,7 +12,7 @@ def get_db_connection():
 # -------------------------
 
 def get_all_users():
-    conn = get_connection()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -35,7 +35,7 @@ def get_all_users():
 
 
 def get_or_create_user(username):
-    conn = get_connection()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Check if user already exists
@@ -70,7 +70,7 @@ def get_or_create_user(username):
 # -------------------------
 
 def get_all_lichens():
-    conn = get_connection()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -114,7 +114,7 @@ def get_all_lichens():
 
 
 def get_lichen_by_id(id):
-    conn = get_connection()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -169,7 +169,7 @@ def update_lichen(id, name, comment, location, latitude, longitude):
 
 
 def delete_lichen(id):
-    conn = get_connection()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
