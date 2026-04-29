@@ -1,10 +1,15 @@
 import sqlite3
+import os
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "lichen_tracker.db")
+
 
 def get_db_connection():
-    conn = sqlite3.connect("database/lichens.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
 
 
 # -------------------------
@@ -38,7 +43,6 @@ def get_or_create_user(username):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if user already exists
     cursor.execute("""
         SELECT userID
         FROM users
@@ -52,7 +56,6 @@ def get_or_create_user(username):
         conn.close()
         return user_id
 
-    # If user does not exist, create new user
     cursor.execute("""
         INSERT INTO users (username)
         VALUES (?)
@@ -64,6 +67,7 @@ def get_or_create_user(username):
 
     conn.close()
     return user_id
+
 
 # -------------------------
 # Lichen functions
@@ -107,12 +111,6 @@ def get_all_lichens():
     return lichens
 
 
-
-
-
-
-
-
 def get_lichen_by_id(id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -139,23 +137,25 @@ def get_lichen_by_id(id):
 
 
 def create_lichen(name, comment, location, latitude, longitude, user_id):
-    conn = sqlite3.connect("database/lichens.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO lichens (name, comment, location, latitude, longitude, userID)
+        INSERT INTO lichens 
+        (name, comment, location, latitude, longitude, userID)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (name, comment, location, latitude, longitude, user_id))
 
     conn.commit()
-    new_id = cursor.lastrowid
-    conn.close()
 
+    new_id = cursor.lastrowid
+
+    conn.close()
     return new_id
 
 
 def update_lichen(id, name, comment, location, latitude, longitude):
-    conn = sqlite3.connect("database/lichens.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -179,4 +179,3 @@ def delete_lichen(id):
 
     conn.commit()
     conn.close()
-
