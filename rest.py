@@ -37,6 +37,9 @@ def lichen_name_page():
 def location_page():
     return send_from_directory("static", "location.html")
 
+@app.route("/user")
+def user_page():
+    return send_from_directory("static", "user.html")
 
 # -------------------------
 # User routes

@@ -265,13 +265,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("message").innerText = "Lichen entry added successfully.";
-
-                document.getElementById("name").value = "";
-                document.getElementById("comment").value = "";
-                document.getElementById("location").value = "";
-                document.getElementById("latitude").value = "";
-                document.getElementById("longitude").value = "";
+                window.location.href = "/view";
             })
             .catch(error => {
                 console.error("Error:", error);

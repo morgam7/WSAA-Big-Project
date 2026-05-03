@@ -109,7 +109,9 @@
                     console.log("URL userID:", userID);
                     console.log("All lichens:", data);
 
-                    const userLichens = data.filter(lichen => lichen.userID == userID);
+                    const userLichens = data.filter(lichen => String(lichen.userID) === String(userID));
+
+                    console.log("Filtered user lichens:", userLichens);
 
                     const results = document.getElementById("results");
                     const message = document.getElementById("message");
