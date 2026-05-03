@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Lichens</title>
 
     <style>
@@ -39,6 +40,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 15px;
         }
 
         button:hover {
@@ -110,24 +112,74 @@
             font-weight: bold;
             margin-top: 10px;
         }
-        a {
-    color: #2e7d32;
-    text-decoration: none;
-    font-weight: bold;
-    }
 
-    a:hover {
-        color: #1b5e20;
-        text-decoration: underline;
-    }
+        a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #1b5e20;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .container {
+                width: auto;
+                margin: 10px;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            .button-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            table {
+                font-size: 13px;
+                min-width: 750px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .actions button {
+                width: auto;
+                font-size: 13px;
+                padding: 7px 10px;
+            }
+
+            #results {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <div class="button-row">
-        
-        <button class="secondary-button" onclick="window.location.href='/'">Back to Home</button>
+        <button class="secondary-button" onclick="window.location.href='/'">
+            Back to Home
+        </button>
     </div>
 
     <p id="result"></p>
