@@ -1,8 +1,10 @@
-# Lichen Tracker — Web Services and Applications Big Project
+# Web Services and Applications Project
+
+![lichens](lichens.jpg)
 
 This is the repository for my Big Project for the Web Services and Applications module of the [Higher Diploma in Science in Computing in Data Analytics at ATU Galway-Mayo](https://www.gmit.ie/higher-diploma-in-science-in-computing-in-data-analytics). My lecturer is [Andrew Beatty](https://github.com/andrewbeattycourseware?tab=overview&from=2022-12-01&to=2022-12-31).
 
-The focus of this project is to create a web application that uses RESTful APIs to perform CRUD operations on data stored in a database. The application I built is called **Lichen Tracker**. It allows users to record, view, update, and delete lichen sightings.
+The focus of this project is to create a web application that uses RESTful APIs to perform CRUD operations on data stored in a database. The application I built is called [**Lichen Tracker**](https://morgam7.pythonanywhere.com/). It allows users to record, view, update, and delete lichen sightings.
 
 ## Author
 
@@ -12,11 +14,8 @@ Marcella Morgan
 
 The hosted version of this project is available here:
 
-[PASTE PYTHONANYWHERE LINK HERE]
+https://morgam7.pythonanywhere.com/
 
-The GitHub repository is available here:
-
-[PASTE GITHUB REPOSITORY LINK HERE]
 
 ## Project Overview
 
