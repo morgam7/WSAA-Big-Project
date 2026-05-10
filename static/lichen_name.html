@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Lichens by Name</title>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lichens by Name | Lichen Tracker</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
             padding: 20px;
         }
@@ -27,19 +33,31 @@
         }
 
         .button-row {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         button {
-            background-color: #555;
+            background-color: #2e7d32;
             color: white;
             padding: 10px 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 15px;
         }
 
         button:hover {
+            background-color: #1b5e20;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        .secondary-button:hover {
             background-color: #333;
         }
 
@@ -50,7 +68,8 @@
             font-size: 14px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
@@ -66,6 +85,17 @@
             background-color: #f9f9f9;
         }
 
+        a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #1b5e20;
+            text-decoration: underline;
+        }
+
         .coords {
             white-space: nowrap;
             font-size: 13px;
@@ -76,15 +106,10 @@
         }
 
         .actions button {
-            background-color: #2e7d32;
             width: auto;
             margin: 2px;
             padding: 7px 10px;
             font-size: 13px;
-        }
-
-        .actions button:hover {
-            background-color: #1b5e20;
         }
 
         #results {
@@ -97,37 +122,112 @@
             color: #555;
             margin-top: 15px;
         }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .container {
+                width: auto;
+                margin: 10px;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .button-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            table {
+                font-size: 13px;
+                min-width: 750px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .actions button {
+                width: auto;
+                font-size: 13px;
+                padding: 7px 10px;
+            }
+
+            #results {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
+
         <h1>Posts for <span id="lichenName">Lichen</span></h1>
 
         <div class="button-row">
-            <button onclick="window.location.href='/view'">Back to View</button>
+            <button onclick="window.location.href='/post'">
+                Post Another Lichen
+            </button>
+
+            <button class="secondary-button" onclick="window.location.href='/view'">
+                View All Lichens
+            </button>
+
+            <button class="secondary-button" onclick="changeUser()">
+                Change User
+            </button>
         </div>
 
         <p id="message"></p>
 
         <div id="results"></div>
+
     </div>
 
+
     <script>
+        // Get the lichen name from the page URL.
         const params = new URLSearchParams(window.location.search);
         const lichenName = params.get("name");
 
+
         function loadLichensByName() {
+            const results = document.getElementById("results");
+            const message = document.getElementById("message");
+            const headingName = document.getElementById("lichenName");
+
+            if (!lichenName) {
+                headingName.innerText = "Unknown Lichen";
+                message.innerText = "No lichen name was provided.";
+                return;
+            }
+
+            headingName.innerText = lichenName;
+
+            // Get all lichen records, then filter them by name on this page.
             fetch("/lichens")
                 .then(response => response.json())
                 .then(data => {
-                    const results = document.getElementById("results");
-                    const message = document.getElementById("message");
-
-                    document.getElementById("lichenName").innerText = lichenName;
-
-                    const matchingLichens = data.filter(lichen => lichen.name === lichenName);
+                    const matchingLichens = data.filter(lichen =>
+                        lichen.name &&
+                        lichen.name.toLowerCase() === lichenName.toLowerCase()
+                    );
 
                     if (matchingLichens.length === 0) {
                         results.innerHTML = "";
@@ -137,6 +237,7 @@
 
                     message.innerText = "";
 
+                    // Build a table showing only records with the selected lichen name.
                     let table = `
                         <table>
                             <thead>
@@ -203,14 +304,27 @@
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    document.getElementById("message").innerText = "Error loading lichen posts.";
+                    message.innerText = "Error loading lichen posts.";
                 });
         }
 
+
         function goToUpdate(id) {
+            // Open the update page for the selected lichen record.
             window.location.href = `/update?id=${id}`;
         }
 
+
+        function changeUser() {
+            // Clear the current user and return to the login page.
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
+
+            window.location.href = "/";
+        }
+
+
+        // Load matching lichen records when the page opens.
         loadLichensByName();
     </script>
 

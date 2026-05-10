@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lichen Tracker</title>
+    <meta charset="UTF-8">
 
-    <style>
+    <!-- Makes the page scale properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Post a Lichen | Lichen Tracker</title>
 
     <style>
         body {
@@ -28,7 +30,6 @@
             text-align: center;
         }
 
-        #login_section,
         #lichen_form_section {
             background-color: white;
             width: 80%;
@@ -48,7 +49,6 @@
         }
 
         input,
-        select,
         textarea {
             width: 100%;
             padding: 10px;
@@ -60,7 +60,6 @@
         }
 
         input:focus,
-        select:focus,
         textarea:focus {
             outline: none;
             border-color: #4f6f52;
@@ -83,12 +82,23 @@
             background-color: #3f5f43;
         }
 
-        #login_message,
-        #message,
-        #current_user {
+        .secondary_button {
+            background-color: #6d7d6d;
+        }
+
+        .secondary_button:hover {
+            background-color: #566356;
+        }
+
+        #current_user,
+        #message {
             margin-top: 15px;
             font-weight: bold;
             color: #4f6f52;
+        }
+
+        .button_row {
+            margin-top: 10px;
         }
 
         @media (max-width: 600px) {
@@ -106,7 +116,6 @@
                 font-size: 22px;
             }
 
-            #login_section,
             #lichen_form_section {
                 width: auto;
                 margin: 15px 10px;
@@ -115,7 +124,6 @@
             }
 
             input,
-            select,
             textarea {
                 font-size: 16px;
                 padding: 12px;
@@ -128,8 +136,11 @@
                 margin-top: 12px;
                 margin-right: 0;
             }
+
+            .button_row {
+                display: block;
+            }
         }
-    </style>
     </style>
 </head>
 
@@ -137,68 +148,32 @@
 
     <h1>Lichen Tracker</h1>
 
-    <!-- USER LOGIN SECTION -->
-    <div id="login_section">
+    <div id="lichen_form_section">
 
-        <h2>Choose User</h2>
-
-        <label for="user_select">Select your username:</label>
-
-        <select id="user_select" onchange="toggleNewUserBox()">
-            <option value="">-- Select a user --</option>
-            <option value="new">+ Add new user</option>
-        </select>
-
-        <br><br>
-
-        <div id="new_user_box" style="display: none;">
-            <label for="new_username">New username:</label>
-            <input type="text" id="new_username">
-        </div>
-
-        <br>
-
-        <button onclick="loginUser()">Continue</button>
-
-        <p id="login_message"></p>
-
-    </div>
-
-
-    <!-- LICHEN FORM SECTION - HIDDEN UNTIL USER LOGS IN -->
-    <div id="lichen_form_section" style="display: none;">
-
-        <h2>Add Lichen Entry</h2>
+        <h2>Post a Lichen</h2>
 
         <p id="current_user"></p>
 
         <label for="name">Lichen Name:</label>
         <input type="text" id="name">
 
-        <br><br>
-
         <label for="comment">Comment:</label>
-        <input type="text" id="comment">
-
-        <br><br>
+        <textarea id="comment" rows="4"></textarea>
 
         <label for="location">Location:</label>
         <input type="text" id="location">
 
-        <br><br>
-
         <label for="latitude">Latitude:</label>
         <input type="text" id="latitude">
-
-        <br><br>
 
         <label for="longitude">Longitude:</label>
         <input type="text" id="longitude">
 
-        <br><br>
-
-        <button onclick="createLichen()">Submit Lichen</button>
-        <button onclick="window.location.href='/view'">View All Lichens</button>
+        <div class="button_row">
+            <button onclick="createLichen()">Submit Lichen</button>
+            <button onclick="window.location.href='/view'" class="secondary_button">View All Lichens</button>
+            <button onclick="changeUser()" class="secondary_button">Change User</button>
+        </div>
 
         <p id="message"></p>
 
@@ -206,84 +181,17 @@
 
 
     <script>
-
-        function toggleNewUserBox() {
-            const selectedValue = document.getElementById("user_select").value;
-            const newUserBox = document.getElementById("new_user_box");
-
-            if (selectedValue === "new") {
-                newUserBox.style.display = "block";
-            } else {
-                newUserBox.style.display = "none";
-            }
-        }
-
-
-        function loadUsers() {
-            fetch("/users")
-                .then(response => response.json())
-                .then(users => {
-                    console.log("Users loaded:", users);
-
-                    const select = document.getElementById("user_select");
-                    const addNewOption = select.querySelector('option[value="new"]');
-
-                    users.forEach(user => {
-                        const option = document.createElement("option");
-
-                        option.value = user.username;
-                        option.textContent = user.username;
-
-                        select.insertBefore(option, addNewOption);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading users:", error);
-                    document.getElementById("login_message").innerText = "Error loading users.";
-                });
-        }
-
-
-        function loginUser() {
-            const selectedUser = document.getElementById("user_select").value;
-            const newUsername = document.getElementById("new_username").value;
-
-            let username;
-
-            if (selectedUser === "new") {
-                username = newUsername;
-            } else {
-                username = selectedUser;
-            }
+        // The username is saved in localStorage after login on the login page.
+        function checkLoggedInUser() {
+            const username = localStorage.getItem("username");
 
             if (!username) {
-                document.getElementById("login_message").innerText = "Please choose or enter a username.";
+                // If no user is selected, return to the sign-in page.
+                window.location.href = "/";
                 return;
             }
 
-            fetch("/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username: username
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                localStorage.setItem("username", data.username);
-                localStorage.setItem("userID", data.userID);
-
-                document.getElementById("current_user").innerText = "Current user: " + data.username;
-
-                document.getElementById("login_section").style.display = "none";
-                document.getElementById("lichen_form_section").style.display = "block";
-            })
-            .catch(error => {
-                console.error("Login error:", error);
-                document.getElementById("login_message").innerText = "Login error.";
-            });
+            document.getElementById("current_user").innerText = "Current user: " + username;
         }
 
 
@@ -292,12 +200,24 @@
 
             const lichen = {
                 username: username,
-                name: document.getElementById("name").value,
-                comment: document.getElementById("comment").value,
-                location: document.getElementById("location").value,
-                latitude: document.getElementById("latitude").value,
-                longitude: document.getElementById("longitude").value
+                name: document.getElementById("name").value.trim(),
+                comment: document.getElementById("comment").value.trim(),
+                location: document.getElementById("location").value.trim(),
+                latitude: document.getElementById("latitude").value.trim(),
+                longitude: document.getElementById("longitude").value.trim()
             };
+
+            // Basic validation before sending the POST request.
+            if (
+                !lichen.name ||
+                !lichen.comment ||
+                !lichen.location ||
+                !lichen.latitude ||
+                !lichen.longitude
+            ) {
+                document.getElementById("message").innerText = "Please fill in all fields before submitting.";
+                return;
+            }
 
             fetch("/lichens", {
                 method: "POST",
@@ -306,8 +226,15 @@
                 },
                 body: JSON.stringify(lichen)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to add lichen entry.");
+                }
+
+                return response.json();
+            })
             .then(data => {
+                // After a successful post, go to the page showing all lichen records.
                 window.location.href = "/view";
             })
             .catch(error => {
@@ -317,8 +244,16 @@
         }
 
 
-        loadUsers();
+        function changeUser() {
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
 
+            // Return to the separate user sign-in page.
+            window.location.href = "/";
+        }
+
+
+        checkLoggedInUser();
     </script>
 
 </body>

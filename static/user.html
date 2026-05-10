@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>User Lichens</title>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>User Lichens | Lichen Tracker</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
             padding: 20px;
         }
@@ -27,19 +33,31 @@
         }
 
         .button-row {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         button {
-            background-color: #555;
+            background-color: #2e7d32;
             color: white;
             padding: 10px 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 15px;
         }
 
         button:hover {
+            background-color: #1b5e20;
+        }
+
+        .secondary-button {
+            background-color: #555;
+        }
+
+        .secondary-button:hover {
             background-color: #333;
         }
 
@@ -50,7 +68,8 @@
             font-size: 14px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
@@ -64,6 +83,17 @@
 
         tr:nth-child(even) {
             background-color: #f9f9f9;
+        }
+
+        a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #1b5e20;
+            text-decoration: underline;
         }
 
         .coords {
@@ -81,51 +111,115 @@
             color: #555;
             margin-top: 15px;
         }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .container {
+                width: auto;
+                margin: 10px;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .button-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            table {
+                font-size: 13px;
+                min-width: 700px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            #results {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
+
         <h1>Lichens posted by <span id="username">User</span></h1>
 
         <div class="button-row">
-            <button onclick="window.location.href='/view'">Back to View</button>
+            <button onclick="window.location.href='/post'">
+                Post Another Lichen
+            </button>
+
+            <button class="secondary-button" onclick="window.location.href='/view'">
+                View All Lichens
+            </button>
+
+            <button class="secondary-button" onclick="changeUser()">
+                Change User
+            </button>
         </div>
 
         <p id="message"></p>
 
         <div id="results"></div>
+
     </div>
 
+
     <script>
+        // Get the user ID from the page URL.
         const params = new URLSearchParams(window.location.search);
         const userID = params.get("id");
 
+
         function loadUserLichens() {
+            const results = document.getElementById("results");
+            const message = document.getElementById("message");
+            const usernameHeading = document.getElementById("username");
+
+            if (!userID) {
+                usernameHeading.innerText = "Unknown User";
+                message.innerText = "No user ID was provided.";
+                return;
+            }
+
+            // Get all lichen records, then filter them by the selected user ID.
             fetch("/lichens")
                 .then(response => response.json())
                 .then(data => {
-                    console.log("URL userID:", userID);
-                    console.log("All lichens:", data);
-
-                    const userLichens = data.filter(lichen => String(lichen.userID) === String(userID));
-
-                    console.log("Filtered user lichens:", userLichens);
-
-                    const results = document.getElementById("results");
-                    const message = document.getElementById("message");
+                    const userLichens = data.filter(lichen =>
+                        String(lichen.userID) === String(userID)
+                    );
 
                     if (userLichens.length === 0) {
-                        document.getElementById("username").innerText = "Unknown User";
+                        usernameHeading.innerText = "Unknown User";
                         results.innerHTML = "";
                         message.innerText = "No lichens found for this user.";
                         return;
                     }
 
-                    document.getElementById("username").innerText = userLichens[0].username;
+                    usernameHeading.innerText = userLichens[0].username || "Unknown User";
                     message.innerText = "";
 
+                    // Build a table showing only records posted by this user.
                     let table = `
                         <table>
                             <thead>
@@ -143,17 +237,29 @@
                     userLichens.forEach(lichen => {
                         table += `
                             <tr>
-                                <td>${lichen.id}</td>
                                 <td>
                                     <a href="/lichen?id=${lichen.id}">
+                                        ${lichen.id}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <a href="/lichen-name?name=${encodeURIComponent(lichen.name)}">
                                         <strong>${lichen.name}</strong>
                                     </a>
                                 </td>
-                                <td>${lichen.location}</td>
+
+                                <td>
+                                    <a href="/location?location=${encodeURIComponent(lichen.location)}">
+                                        ${lichen.location}
+                                    </a>
+                                </td>
+
                                 <td class="coords">
                                     Lat: ${lichen.latitude}<br>
                                     Long: ${lichen.longitude}
                                 </td>
+
                                 <td>${lichen.comment}</td>
                             </tr>
                         `;
@@ -168,10 +274,21 @@
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    document.getElementById("message").innerText = "Error loading user lichens.";
+                    message.innerText = "Error loading user lichens.";
                 });
         }
 
+
+        function changeUser() {
+            // Clear the current user and return to the login page.
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
+
+            window.location.href = "/";
+        }
+
+
+        // Load this user's lichen records when the page opens.
         loadUserLichens();
     </script>
 

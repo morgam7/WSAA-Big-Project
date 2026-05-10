@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Lichen Details</title>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lichen Details | Lichen Tracker</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
             padding: 20px;
         }
@@ -23,6 +29,7 @@
         h1 {
             color: #2e7d32;
             margin-top: 0;
+            text-align: center;
         }
 
         .detail-box {
@@ -30,12 +37,18 @@
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .detail-box p {
+            margin: 10px 0;
         }
 
         label {
             font-weight: bold;
             display: block;
             margin-top: 15px;
+            margin-bottom: 6px;
         }
 
         textarea {
@@ -46,27 +59,84 @@
             border-radius: 5px;
             border: 1px solid #ccc;
             font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4f6f52;
+            box-shadow: 0 0 4px rgba(79, 111, 82, 0.4);
         }
 
         button {
             background-color: #2e7d32;
             color: white;
-            padding: 10px;
+            padding: 10px 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
-            width: 100%;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
         }
 
         .secondary-button {
             background-color: #555;
         }
 
+        .secondary-button:hover {
+            background-color: #333;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
         #result {
             text-align: center;
             color: #2e7d32;
             font-weight: bold;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .container {
+                width: auto;
+                margin: 10px;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            textarea {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .button-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -74,57 +144,101 @@
 <body>
 
     <div class="container">
+
         <h1 id="lichenName">Lichen Details</h1>
 
         <div class="detail-box">
             <p><strong>Location:</strong> <span id="location"></span></p>
             <p><strong>Latitude:</strong> <span id="latitude"></span></p>
             <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+            <p><strong>Posted By:</strong> <span id="username"></span></p>
             <p><strong>Current Comment:</strong> <span id="comment"></span></p>
         </div>
 
         <label for="newComment">Leave / update comment:</label>
         <textarea id="newComment"></textarea>
 
-        <button onclick="saveComment()">Save Comment</button>
-        <button class="secondary-button" onclick="window.location.href='/view'">Back to View</button>
+        <div class="button-row">
+            <button onclick="saveComment()">Save Comment</button>
+
+            <button class="secondary-button" onclick="window.location.href='/post'">
+                Post Another Lichen
+            </button>
+
+            <button class="secondary-button" onclick="window.location.href='/view'">
+                View All Lichens
+            </button>
+
+            <button class="secondary-button" onclick="changeUser()">
+                Change User
+            </button>
+        </div>
 
         <p id="result"></p>
+
     </div>
 
+
     <script>
+        // Get the lichen ID from the page URL.
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
 
         let currentLichen = null;
 
-        function loadLichen() {
-            fetch("/lichens")
-                .then(response => response.json())
-                .then(data => {
-                    currentLichen = data.find(item => item.id == id);
 
-                    if (!currentLichen) {
-                        document.getElementById("result").innerText = "Lichen not found.";
-                        return;
+        function loadLichen() {
+            const result = document.getElementById("result");
+
+            if (!id) {
+                result.innerText = "No lichen ID was provided.";
+                return;
+            }
+
+            // Get the selected lichen record from the Flask API.
+            fetch(`/lichens/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Lichen not found.");
                     }
+
+                    return response.json();
+                })
+                .then(data => {
+                    currentLichen = data;
 
                     document.getElementById("lichenName").innerText = currentLichen.name;
                     document.getElementById("location").innerText = currentLichen.location;
                     document.getElementById("latitude").innerText = currentLichen.latitude;
                     document.getElementById("longitude").innerText = currentLichen.longitude;
+                    document.getElementById("username").innerText = currentLichen.username || "Unknown";
                     document.getElementById("comment").innerText = currentLichen.comment;
                     document.getElementById("newComment").value = currentLichen.comment;
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    document.getElementById("result").innerText = "Error loading lichen.";
+                    result.innerText = "Error loading lichen.";
                 });
         }
 
-        function saveComment() {
-            const updatedComment = document.getElementById("newComment").value;
 
+        function saveComment() {
+            const result = document.getElementById("result");
+
+            if (!currentLichen) {
+                result.innerText = "Lichen details have not loaded yet.";
+                return;
+            }
+
+            const updatedComment = document.getElementById("newComment").value.trim();
+
+            if (!updatedComment) {
+                result.innerText = "Comment cannot be blank.";
+                return;
+            }
+
+            // Send the updated comment using the existing PUT route.
+            // The full lichen record is included because the API expects all fields.
             fetch(`/lichens/${id}`, {
                 method: "PUT",
                 headers: {
@@ -138,17 +252,36 @@
                     comment: updatedComment
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Update failed.");
+                }
+
+                return response.json();
+            })
             .then(data => {
+                currentLichen.comment = updatedComment;
+
                 document.getElementById("result").innerText = "Comment saved.";
                 document.getElementById("comment").innerText = updatedComment;
             })
             .catch(error => {
                 console.error("Error:", error);
-                document.getElementById("result").innerText = "Error saving comment.";
+                result.innerText = "Error saving comment.";
             });
         }
 
+
+        function changeUser() {
+            // Clear the current user and return to the login page.
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
+
+            window.location.href = "/";
+        }
+
+
+        // Load the selected lichen when the page opens.
         loadLichen();
     </script>
 

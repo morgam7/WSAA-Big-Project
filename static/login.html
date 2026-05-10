@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | Lichen Tracker</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #eef3ee;
+            color: #243024;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            background-color: #4f6f52;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin: 0 0 30px 0;
+        }
+
+        h2 {
+            color: #3f5f43;
+            text-align: center;
+        }
+
+        #login_section {
+            background-color: white;
+            width: 80%;
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #2f3d2f;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #b8c7b8;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            background-color: #fbfdfb;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4f6f52;
+            box-shadow: 0 0 4px rgba(79, 111, 82, 0.4);
+        }
+
+        button {
+            background-color: #4f6f52;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            margin-top: 18px;
+            margin-right: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #3f5f43;
+        }
+
+        #login_message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #4f6f52;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 16px;
+            }
+
+            h1 {
+                font-size: 28px;
+                padding: 20px 10px;
+                margin-bottom: 15px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            #login_section {
+                width: auto;
+                margin: 15px 10px;
+                padding: 20px;
+                border-radius: 10px;
+            }
+
+            input,
+            select {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            button {
+                width: 100%;
+                font-size: 16px;
+                padding: 13px;
+                margin-top: 12px;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Lichen Tracker</h1>
+
+    <!-- USER LOGIN SECTION -->
+    <div id="login_section">
+
+        <h2>Choose User</h2>
+
+        <label for="user_select">Select your username:</label>
+
+        <select id="user_select" onchange="toggleNewUserBox()">
+            <option value="">-- Select a user --</option>
+            <option value="new">+ Add new user</option>
+        </select>
+
+        <!-- This box is only shown when the user chooses "+ Add new user" -->
+        <div id="new_user_box" style="display: none;">
+            <label for="new_username">New username:</label>
+            <input type="text" id="new_username">
+        </div>
+
+        <button onclick="loginUser()">Continue</button>
+
+        <p id="login_message"></p>
+
+    </div>
+
+
+    <script>
+        function toggleNewUserBox() {
+            const selectedValue = document.getElementById("user_select").value;
+            const newUserBox = document.getElementById("new_user_box");
+
+            // Show the new username input only when the user wants to add a new user.
+            if (selectedValue === "new") {
+                newUserBox.style.display = "block";
+            } else {
+                newUserBox.style.display = "none";
+            }
+        }
+
+
+        function loadUsers() {
+            // Get existing users from the Flask API and add them to the dropdown.
+            fetch("/users")
+                .then(response => response.json())
+                .then(users => {
+                    const select = document.getElementById("user_select");
+                    const addNewOption = select.querySelector('option[value="new"]');
+
+                    users.forEach(user => {
+                        const option = document.createElement("option");
+
+                        option.value = user.username;
+                        option.textContent = user.username;
+
+                        select.insertBefore(option, addNewOption);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading users:", error);
+                    document.getElementById("login_message").innerText = "Error loading users.";
+                });
+        }
+
+
+        function loginUser() {
+            const selectedUser = document.getElementById("user_select").value;
+            const newUsername = document.getElementById("new_username").value.trim();
+
+            let username;
+
+            // Use either the selected existing username or the new username entered.
+            if (selectedUser === "new") {
+                username = newUsername;
+            } else {
+                username = selectedUser;
+            }
+
+            if (!username) {
+                document.getElementById("login_message").innerText = "Please choose or enter a username.";
+                return;
+            }
+
+            // Send the username to Flask.
+            // Flask will either find the existing user or create a new one.
+            fetch("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Login failed.");
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                // Store the current user so the post page knows who is submitting the lichen.
+                localStorage.setItem("username", data.username);
+                localStorage.setItem("userID", data.userID);
+
+                // Continue to the post-a-lichen page.
+                window.location.href = "/post";
+            })
+            .catch(error => {
+                console.error("Login error:", error);
+                document.getElementById("login_message").innerText = "Login error.";
+            });
+        }
+
+
+        // Load users as soon as the page opens.
+        loadUsers();
+    </script>
+
+</body>
+</html>

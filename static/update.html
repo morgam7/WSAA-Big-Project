@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Update Lichen</title>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Update Lichen | Lichen Tracker</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
             padding: 20px;
         }
@@ -29,17 +35,27 @@
         label {
             font-weight: bold;
             font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
         }
 
-        input, textarea {
+        input,
+        textarea {
             width: 100%;
             padding: 9px;
-            margin-top: 5px;
             margin-bottom: 15px;
             border-radius: 5px;
             border: 1px solid #ccc;
             box-sizing: border-box;
             font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4f6f52;
+            box-shadow: 0 0 4px rgba(79, 111, 82, 0.4);
         }
 
         textarea {
@@ -56,15 +72,22 @@
             flex: 1;
         }
 
+        .button-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
         button {
             background-color: #2e7d32;
             color: white;
-            padding: 10px;
+            padding: 10px 14px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
-            margin-top: 8px;
+            font-size: 15px;
         }
 
         button:hover {
@@ -82,6 +105,42 @@
         #result {
             text-align: center;
             margin-top: 15px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .container {
+                width: auto;
+                margin: 10px;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input,
+            textarea {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .coord-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -116,30 +175,53 @@
         <label for="comment">Comment:</label>
         <textarea id="comment"></textarea>
 
-        <button onclick="updateLichen()">Update Lichen</button>
-        <button class="secondary-button" onclick="window.location.href='/view'">Back to View</button>
+        <div class="button-row">
+            <button onclick="updateLichen()">Update Lichen</button>
+
+            <button class="secondary-button" onclick="window.location.href='/post'">
+                Post Another Lichen
+            </button>
+
+            <button class="secondary-button" onclick="window.location.href='/view'">
+                View All Lichens
+            </button>
+
+            <button class="secondary-button" onclick="changeUser()">
+                Change User
+            </button>
+        </div>
 
         <p id="result"></p>
 
     </div>
 
+
     <script>
+        // Get the lichen ID from the page URL.
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
 
-        document.getElementById("lichenId").value = id;
+        document.getElementById("lichenId").value = id || "";
+
 
         function loadLichenForUpdate() {
-            fetch(`/lichens`)
-                .then(response => response.json())
-                .then(data => {
-                    const lichen = data.find(item => item.id == id);
+            const result = document.getElementById("result");
 
-                    if (!lichen) {
-                        document.getElementById("result").innerText = "Lichen not found.";
-                        return;
+            if (!id) {
+                result.innerText = "No lichen ID was provided.";
+                return;
+            }
+
+            // Load the selected lichen record from the Flask API.
+            fetch(`/lichens/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Lichen not found.");
                     }
 
+                    return response.json();
+                })
+                .then(lichen => {
                     document.getElementById("name").value = lichen.name;
                     document.getElementById("location").value = lichen.location;
                     document.getElementById("latitude").value = lichen.latitude;
@@ -147,42 +229,70 @@
                     document.getElementById("comment").value = lichen.comment;
                 })
                 .catch(error => {
-                    document.getElementById("result").innerText = "Error loading lichen.";
+                    result.innerText = "Error loading lichen.";
                     console.error("Error:", error);
                 });
         }
 
+
         function updateLichen() {
-            const id = document.getElementById("lichenId").value;
-            const name = document.getElementById("name").value;
-            const location = document.getElementById("location").value;
-            const latitude = document.getElementById("latitude").value;
-            const longitude = document.getElementById("longitude").value;
-            const comment = document.getElementById("comment").value;
+            const result = document.getElementById("result");
+
+            const lichen = {
+                name: document.getElementById("name").value.trim(),
+                location: document.getElementById("location").value.trim(),
+                latitude: document.getElementById("latitude").value.trim(),
+                longitude: document.getElementById("longitude").value.trim(),
+                comment: document.getElementById("comment").value.trim()
+            };
+
+            // Basic validation before sending the PUT request.
+            if (
+                !lichen.name ||
+                !lichen.location ||
+                !lichen.latitude ||
+                !lichen.longitude ||
+                !lichen.comment
+            ) {
+                result.innerText = "Please fill in all fields before updating.";
+                return;
+            }
 
             fetch(`/lichens/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    name: name,
-                    location: location,
-                    latitude: latitude,
-                    longitude: longitude,
-                    comment: comment
-                })
+                body: JSON.stringify(lichen)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Update failed.");
+                }
+
+                return response.json();
+            })
             .then(data => {
-            window.location.href = "/view";
+                // Return to the main view page after the record is updated.
+                window.location.href = "/view";
             })
             .catch(error => {
-                document.getElementById("result").innerText = "Error updating lichen.";
+                result.innerText = "Error updating lichen.";
                 console.error("Error:", error);
             });
         }
 
+
+        function changeUser() {
+            // Clear the current user and return to the login page.
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
+
+            window.location.href = "/";
+        }
+
+
+        // Load the existing lichen details when the page opens.
         loadLichenForUpdate();
     </script>
 

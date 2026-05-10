@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+
+    <!-- Makes the page display properly on phones and tablets -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Lichens</title>
+
+    <title>View Lichens | Lichen Tracker</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #eef3ee;
+            color: #243024;
             margin: 0;
             padding: 20px;
         }
@@ -31,6 +36,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -70,7 +76,8 @@
             font-size: 14px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
@@ -157,7 +164,8 @@
                 min-width: 750px;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 8px;
             }
 
@@ -176,18 +184,30 @@
 
 <body>
 
-    <div class="button-row">
-        <button class="secondary-button" onclick="window.location.href='/'">
-            Back to Home
-        </button>
+    <div class="container">
+
+        <h1>View Lichens</h1>
+
+        <div class="button-row">
+            <button onclick="window.location.href='/post'">
+                Post Another Lichen
+            </button>
+
+            <button class="secondary-button" onclick="changeUser()">
+                Change User
+            </button>
+        </div>
+
+        <p id="result"></p>
+
+        <div id="results"></div>
+
     </div>
 
-    <p id="result"></p>
-
-    <div id="results"></div>
 
     <script>
         function loadLichens() {
+            // Get all lichen records from the Flask API.
             fetch("/lichens")
                 .then(response => response.json())
                 .then(data => {
@@ -198,6 +218,7 @@
                         return;
                     }
 
+                    // Build the table of lichen records dynamically.
                     let table = `
                         <table>
                             <thead>
@@ -271,15 +292,31 @@
                 });
         }
 
+
         function goToUpdate(id) {
+            // Open the update page for the selected lichen record.
             window.location.href = `/update?id=${id}`;
         }
 
+
         function deleteLichen(id) {
+            // Ask for confirmation before deleting a record.
+            const confirmDelete = confirm("Are you sure you want to delete this lichen?");
+
+            if (!confirmDelete) {
+                return;
+            }
+
             fetch(`/lichens/${id}`, {
                 method: "DELETE"
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Delete failed.");
+                }
+
+                return response.json();
+            })
             .then(data => {
                 const result = document.getElementById("result");
 
@@ -287,6 +324,7 @@
                     result.innerText = "Lichen deleted successfully.";
                 }
 
+                // Reload the table so the deleted record disappears from the page.
                 loadLichens();
             })
             .catch(error => {
@@ -300,6 +338,17 @@
             });
         }
 
+
+        function changeUser() {
+            // Clear the current user and return to the login page.
+            localStorage.removeItem("username");
+            localStorage.removeItem("userID");
+
+            window.location.href = "/";
+        }
+
+
+        // Load the lichen table when the page opens.
         loadLichens();
     </script>
 
